@@ -3,7 +3,8 @@ var express = require("express")
 var app = express()
 var db = require("./database.js")
 var cors = require('cors');
-
+var md5 = require("md5")
+var bodyParser = require("body-parser");
 
 
 // Server port
@@ -16,7 +17,8 @@ app.listen(HTTP_PORT, () => {
 app.get("/", (req, res, next) => {
     res.json({"message":"Ok"})
 });
-
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 app.use(cors());
 
 // CUSTOMERS API
@@ -49,6 +51,27 @@ app.get('/api/customers/:id', (req, res, next) => {
         })
       });
 });
+
+app.post("/api/customers/", (req, res, next) => {
+    var data = {
+        name: req.body.name,
+        address: req.body.address,
+        phone : req.body.phone
+    }
+    var sql ='INSERT INTO customer (name, address, phone) VALUES (?,?,?)'
+    var params =[data.name, data.address, data.phone]
+    db.run(sql, params, function (err, result) {
+        if (err){
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": data,
+            "id" : this.lastID
+        })
+    });
+})
 
 // Default response for any other request
 app.use(function(req, res){
