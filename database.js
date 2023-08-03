@@ -56,7 +56,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
                 // Table users already created
             }
         })
-        db.run(`CREATE TABLE invoice_item (
+        db.run(`CREATE TABLE item (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             invoice_id INTEGER, 
             product_id INTEGER,
