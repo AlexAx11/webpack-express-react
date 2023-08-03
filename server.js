@@ -3,7 +3,6 @@ var express = require("express")
 var app = express()
 var db = require("./database.js")
 var cors = require('cors');
-var md5 = require("md5")
 var bodyParser = require("body-parser");
 
 
