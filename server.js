@@ -204,6 +204,100 @@ app.delete("/api/products/:id", (req, res, next) => {
     });
 })
 
+//INVOICE API
+app.get("/api/invoices", (req, res, next) => {
+    var sql = "select * from invoice"
+    var params = []
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+      });
+});
+
+app.get('/api/invoices/:id', (req, res, next) => {
+    var sql = "select * from invoice where id = ?"
+    var params = [req.params.id]
+    db.get(sql, params, (err, row) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":row
+        })
+      });
+});
+
+app.post("/api/invoices/", (req, res, next) => {
+    var data = {
+        customer_id: req.body.customer_id,
+        discount: req.body.discount,
+        total: req.body.total
+    }
+    var sql ='INSERT INTO invoice (customer_id, discount, total) VALUES (?,?,?)'
+    var params =[data.customer_id, data.discount, data.total]
+    db.run(sql, params, function (err, result) {
+        if (err){
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": data,
+            "id" : this.lastID
+        })
+    });
+})
+
+//UPDATE
+app.patch("/api/invoices/:id", (req, res, next) => {
+    var data = {
+        customer_id: req.body.customer_id,
+        discount: req.body.discount,
+        total: req.body.total
+    }
+    db.run(
+        `UPDATE invoice set 
+            customer_id = COALESCE(?,customer_id), 
+            discount = COALESCE(?,discount),
+            total = COALESCE(?,total)
+           WHERE id = ?`,
+        [data.customer_id, data.discount, data.total, req.params.id],
+        function (err, result) {
+            if (err){
+                res.status(400).json({"error": res.message})
+                return;
+            }
+            res.json({
+                message: "success",
+                data: data,
+                changes: this.changes
+            })
+    });
+})
+
+//DELETE INVOICE
+app.delete("/api/invoices/:id", (req, res, next) => {
+    db.run(
+        'DELETE FROM invoice WHERE id = ?',
+        req.params.id,
+        function (err, result) {
+            if (err){
+                res.status(400).json({"error": res.message})
+                return;
+            }
+            res.json({"message":"deleted", changes: this.changes})
+    });
+})
+
+
 
 // Default response for any other request
 app.use(function(req, res){
