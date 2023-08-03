@@ -19,7 +19,7 @@ app.get("/", (req, res, next) => {
 
 app.use(cors());
 
-// Insert here other API endpoints
+// CUSTOMERS API
 app.get("/api/customers", (req, res, next) => {
     var sql = "select * from customer"
     var params = []
@@ -31,6 +31,21 @@ app.get("/api/customers", (req, res, next) => {
         res.json({
             "message":"success",
             "data":rows
+        })
+      });
+});
+
+app.get('/api/customers/:id', (req, res, next) => {
+    var sql = "select * from customer where id = ?"
+    var params = [req.params.id]
+    db.get(sql, params, (err, row) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":row
         })
       });
 });
