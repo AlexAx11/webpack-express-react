@@ -99,6 +99,22 @@ app.patch("/api/customers/:id", (req, res, next) => {
             })
     });
 })
+
+//DELETE CUSTOMER
+app.delete("/api/customers/:id", (req, res, next) => {
+    db.run(
+        'DELETE FROM customer WHERE id = ?',
+        req.params.id,
+        function (err, result) {
+            if (err){
+                res.status(400).json({"error": res.message})
+                return;
+            }
+            res.json({"message":"deleted", changes: this.changes})
+    });
+})
+
+
 // Default response for any other request
 app.use(function(req, res){
     res.status(404);
