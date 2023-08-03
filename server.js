@@ -114,6 +114,96 @@ app.delete("/api/customers/:id", (req, res, next) => {
     });
 })
 
+//PRODUCTS API
+app.get("/api/products", (req, res, next) => {
+    var sql = "select * from product"
+    var params = []
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+      });
+});
+
+app.get('/api/products/:id', (req, res, next) => {
+    var sql = "select * from product where id = ?"
+    var params = [req.params.id]
+    db.get(sql, params, (err, row) => {
+        if (err) {
+          res.status(400).json({"error":err.message});
+          return;
+        }
+        res.json({
+            "message":"success",
+            "data":row
+        })
+      });
+});
+
+app.post("/api/products/", (req, res, next) => {
+    var data = {
+        name: req.body.name,
+        price: req.body.price,
+    }
+    var sql ='INSERT INTO product (name, price) VALUES (?,?)'
+    var params =[data.name, data.price]
+    db.run(sql, params, function (err, result) {
+        if (err){
+            res.status(400).json({"error": err.message})
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": data,
+            "id" : this.lastID
+        })
+    });
+})
+
+//UPDATE
+app.patch("/api/products/:id", (req, res, next) => {
+    var data = {
+        name: req.body.name,
+        price: req.body.price
+    }
+    db.run(
+        `UPDATE product set 
+           name = COALESCE(?,name), 
+           price = COALESCE(?,price)
+           WHERE id = ?`,
+        [data.name, data.price, req.params.id],
+        function (err, result) {
+            if (err){
+                res.status(400).json({"error": res.message})
+                return;
+            }
+            res.json({
+                message: "success",
+                data: data,
+                changes: this.changes
+            })
+    });
+})
+
+//DELETE PRODUCT
+app.delete("/api/products/:id", (req, res, next) => {
+    db.run(
+        'DELETE FROM product WHERE id = ?',
+        req.params.id,
+        function (err, result) {
+            if (err){
+                res.status(400).json({"error": res.message})
+                return;
+            }
+            res.json({"message":"deleted", changes: this.changes})
+    });
+})
+
 
 // Default response for any other request
 app.use(function(req, res){

@@ -12,9 +12,9 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         console.log('Connected to the SQLite database.')
         db.run(`CREATE TABLE customer (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name text, 
-            address text,
-            phone text
+            name TEXT, 
+            address TEXT,
+            phone TEXT
             )`,
         (err) => {
             if (err) {
@@ -32,19 +32,24 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
         });  
         db.run(`CREATE TABLE product (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name text, 
-            price DECIMAL,
+            name TEXT, 
+            price NUMERIC
             )`,
         (err) => {
             if (err) {
                 // Table users already created
+            } else {
+                // Table just created, creating some rows
+                db.run(`INSERT INTO product (name, price) VALUES ("Parachute Pants", 19.99)`)
+                db.run(`INSERT INTO product (name, price) VALUES ("Phone Holder", 9.99)`)
+                db.run(`INSERT INTO product (name, price) VALUES ("Pet Rock", 5.99)`)
             }
         })
         db.run(`CREATE TABLE invoice (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_id INTEGER, 
-            discount DECIMAL,
-            total DECIMAL
+            discount NUMERIC,
+            total NUMERIC
             )`,
         (err) => {
             if (err) {
@@ -55,7 +60,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             invoice_id INTEGER, 
             product_id INTEGER,
-            quantity DECIMAL
+            quantity NUMERIC
             )`,
         (err) => {
             if (err) {
