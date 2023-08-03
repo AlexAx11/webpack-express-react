@@ -73,6 +73,32 @@ app.post("/api/customers/", (req, res, next) => {
     });
 })
 
+//UPDATE
+app.patch("/api/customers/:id", (req, res, next) => {
+    var data = {
+        name: req.body.name,
+        address: req.body.address,
+        phone : req.body.phone
+    }
+    db.run(
+        `UPDATE customer set 
+           name = COALESCE(?,name), 
+           address = COALESCE(?,address), 
+           phone = COALESCE(?,phone) 
+           WHERE id = ?`,
+        [data.name, data.address, data.phone, req.params.id],
+        function (err, result) {
+            if (err){
+                res.status(400).json({"error": res.message})
+                return;
+            }
+            res.json({
+                message: "success",
+                data: data,
+                changes: this.changes
+            })
+    });
+})
 // Default response for any other request
 app.use(function(req, res){
     res.status(404);
