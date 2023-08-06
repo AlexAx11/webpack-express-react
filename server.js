@@ -314,56 +314,54 @@ app.get('/api/invoices/:invoice_id/items', (req, res, next) => {
       });
 });
 
+app.post('/api/invoices/:invoice_id/items/', (req, res, next) => {
+    const { product_id, quantity } = req.body;
+    var sql = "INSERT INTO item (invoice_id, product_id, quantity) VALUES (?, ?, ?)";
+    var params = [req.params.invoice_id, product_id, quantity];
+    db.run(sql, params, function (err) {
+        if (err) {
+            res.status(400).json({ "error": err.message });
+            return;
+        }
+        res.json({
+            "message": "success",
+            "data": {
+                invoice_id: req.params.invoice_id,
+                product_id: product_id,
+                quantity: quantity
+            }
+        });
+    });
+});
+
 app.get('/api/invoices/:invoice_id/items/:id', (req, res, next) => {
-    var sql = "SELECT * FROM item WHERE invoice_id = ? AND id = ?";
-    var params = [req.params.invoice_id, req.params.id];
-    db.get(sql, params, (err, row) => {
+    var invoice_id = req.params.invoice_id;
+    var sql = "select * FROM item WHERE invoice_id = ? AND id = ?";
+    var params = [invoice_id]
+    db.all(sql, params, (err, rows) => {
         if (err) {
           res.status(400).json({"error":err.message});
           return;
         }
         res.json({
             "message":"success",
-            "data":row
+            "data":rows
         })
       });
 });
 
-app.post("/api/items/", (req, res, next) => {
-    var data = {
-        invoice_id: req.body.invoice_id,
-        product_id: req.body.product_id,
-        quantity: req.body.quantity
-    }
-    var sql ='INSERT INTO item (invoice_id, product_id, quantity) VALUES (?,?,?)'
-    var params =[data.invoice_id, data.product_id, data.quantity]
-    db.run(sql, params, function (err, result) {
-        if (err){
-            res.status(400).json({"error": err.message})
-            return;
-        }
-        res.json({
-            "message": "success",
-            "data": data,
-            "id" : this.lastID
-        })
-    });
-})
-
 //UPDATE
-app.patch("/api/item/:id", (req, res, next) => {
-    var data = {
-        invoice_id: req.body.invoice_id,
-        product_id: req.body.product_id,
-        quantity: req.body.quantity
-    }
+app.patch('/api/invoices/:invoice_id/items/:id', (req, res, next) => {
+    const itemId = req.params.id;
+    const { invoice_id, product_id, quantity } = req.body;
     db.run(
-        `UPDATE item set 
+        `UPDATE item 
+        set 
             invoice_id = COALESCE(?,invoice_id), 
             product_id = COALESCE(?,product_id),
             quantity = COALESCE(?,quantity)
            WHERE id = ?`,
-        [data.invoice_id, data.product_id, data.quantity, req.params.id],
+        [invoice_id, product_id, quantity, itemId],
         function (err, result) {
             if (err){
                 res.status(400).json({"error": res.message})
@@ -371,17 +369,21 @@ app.patch("/api/item/:id", (req, res, next) => {
             }
             res.json({
                 message: "success",
-                data: data,
+                data: {
+                    invoice_id: invoice_id || this.changes.invoice_id,
+                    product_id: product_id || this.changes.product_id,
+                    quantity: quantity || this.changes.quantity,
+                },
                 changes: this.changes
-            })
+            });
     });
 })
 
 //DELETE item
-app.delete("/api/items/:id", (req, res, next) => {
+app.delete('/api/invoices/:invoice_id/items/:id', (req, res, next) => {
     db.run(
-        'DELETE FROM item WHERE id = ?',
-        req.params.id,
+        'DELETE FROM item WHERE invoice_id = ? AND id = ?'
+        [req.params.invoice_id, req.params.id],
         function (err, result) {
             if (err){
                 res.status(400).json({"error": res.message})

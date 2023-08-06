@@ -53,7 +53,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             )`,
         (err) => {
             if (err) {
-                // Table users already created
+                // Table invoices already created
             }
         })
         db.run(`CREATE TABLE item (
@@ -64,7 +64,7 @@ let db = new sqlite3.Database(DBSOURCE, (err) => {
             )`,
         (err) => {
             if (err) {
-                // Table users already created
+                // Table items already created
             }
         })
     }
